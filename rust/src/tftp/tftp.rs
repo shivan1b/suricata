@@ -145,7 +145,7 @@ pub extern "C" fn rs_tftp_request(state: &mut TFTPState,
                                   len: u32) -> i64 {
     let buf = unsafe{std::slice::from_raw_parts(input, len as usize)};
     return match tftp_request(buf) {
-        Ok((_, mut rqst)) => {
+        nom::IResult::Done(_, mut rqst) => {
             state.tx_id += 1;
             rqst.id = state.tx_id;
             state.transactions.push(rqst);
