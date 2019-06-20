@@ -2293,7 +2293,7 @@ fi
         if test "x$HAVE_CARGO" != "xno"; then
           if test "x$HAVE_RUSTC" != "xno"; then
             AC_DEFINE([HAVE_RUST],[1],[Enable Rust language])
-            if test "x$enable_debug" = "xyes"; then
+            if test "x$enable_rust_debug" = "xyes"; then
               RUST_SURICATA_LIB="../rust/target/debug/${RUST_SURICATA_LIBNAME}"
             else
               RUST_SURICATA_LIB="../rust/target/release/${RUST_SURICATA_LIBNAME}"
