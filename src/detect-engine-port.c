@@ -1419,13 +1419,17 @@ DetectPort *PortParse(const char *str)
         port2[0] = '\0';
         port2++;
 
-        if (DetectPortIsValidRange(port)) {
-            if (ByteExtractStringUint16(&dp->port, 10, 0,
-                                        (const char *)port) < 0)
+        if (strcmp(port, "") != 0) {
+            if (DetectPortIsValidRange(port)) {
+                if (ByteExtractStringUint16(&dp->port, 10, 0,
+                                            (const char *)port) < 0)
+                    goto error;
+            }
+            else
                 goto error;
+        } else {
+            dp->port = 0;
         }
-        else
-            goto error;
 
         if (strcmp(port2, "") != 0) {
             if (DetectPortIsValidRange(port2)) {
