@@ -634,8 +634,7 @@ static int DetectDceIfaceTestParse06(void)
                            0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC};
     SigMatch *temp = NULL;
     int i = 0;
-
-    result = (DetectDceIfaceSetup(NULL, s, "12345678-1234-1234-1234-123456789ABC,any_frag") == 0);
+    result = (DetectDceIfaceSetup(NULL, s, "12345678-1234-1234-1234-123456789ABC,any_frag") == -1);
 
     if (s->sm_lists[g_dce_generic_list_id] == NULL) {
         SCReturnInt(0);

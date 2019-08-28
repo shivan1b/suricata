@@ -157,7 +157,7 @@ int SCGetUserID(const char *user_name, const char *group_name, uint32_t *uid, ui
     /* Get the user ID */
     if (isdigit((unsigned char)user_name[0]) != 0) {
         if (ByteExtractStringUint32(&userid, 10, 0, (const char *)user_name) < 0) {
-            SCLogError(SC_ERR_UID_FAILED, "Invalid user name: '%s'", user_name);
+            SCLogError(SC_ERR_UID_FAILED, "invalid user name: '%s'", user_name);
             exit(EXIT_FAILURE);
         }
         pw = getpwuid(userid);

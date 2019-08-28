@@ -343,8 +343,7 @@ static DetectEnipCommandData *DetectEnipCommandParse(const char *rulestr)
         SCLogError(SC_ERR_INVALID_SIGNATURE, "invalid ENIP command %s", rulestr);
         goto error;
     }
-
-    unsigned long cmd = atol(rulestr);
+    unsigned long cmd;
     if (ByteExtractStringUint64(&cmd, 10, 0, rulestr) < 0) {
         SCLogError(SC_ERR_INVALID_SIGNATURE, "invalid ENIP command"
                 ": \"%s\"", rulestr);

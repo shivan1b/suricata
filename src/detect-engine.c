@@ -4305,7 +4305,7 @@ static int DetectEngineTest02(void)
     if (de_ctx == NULL)
         goto end;
 
-    result = (de_ctx->inspection_recursion_limit == -1);
+    result = (de_ctx->inspection_recursion_limit == DETECT_ENGINE_DEFAULT_INSPECTION_RECURSION_LIMIT);
 
  end:
     if (de_ctx != NULL)

@@ -146,8 +146,8 @@ static void *ParsePcapConfig(const char *iface)
     } else {
         if (threadsstr != NULL) {
             if (ByteExtractStringInt32(&aconf->threads, 10, 0, (const char *)threadsstr) < 0) {
-                SCLogWarning(SC_ERR_INVALID_VALUE, "Invalid value for aconf "
-                             "threads: '%s'. Resetting to 1.", threadsstr);
+                SCLogWarning(SC_ERR_INVALID_VALUE, "Invalid value for "
+                             "pcap.threads: '%s'. Resetting to 1.", threadsstr);
                 aconf->threads = 1;
             }
         }

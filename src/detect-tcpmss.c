@@ -183,6 +183,8 @@ static DetectTcpmssData *DetectTcpmssParse (const char *tcpmssstr)
 
                 tcpmssd->mode = DETECT_TCPMSS_LT;
                 if (ByteExtractStringUint16(&tcpmssd->arg1, 10, 0, (const char *)arg3) < 0) {
+                    SCLogError(SC_ERR_INVALID_SIGNATURE, "Invalid value for "
+                               "first arg: %s", arg3);
                     goto error;
                 }
 
@@ -197,6 +199,8 @@ static DetectTcpmssData *DetectTcpmssParse (const char *tcpmssstr)
 
                 tcpmssd->mode = DETECT_TCPMSS_GT;
                 if (ByteExtractStringUint16(&tcpmssd->arg1, 10, 0, (const char *)arg3) < 0) {
+                    SCLogError(SC_ERR_INVALID_SIGNATURE, "Invalid value "
+                               "for first arg: %s", arg3);
                     goto error;
                 }
 

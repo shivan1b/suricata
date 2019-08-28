@@ -193,13 +193,11 @@ static void *ParseAFPConfig(const char *iface)
         aconf->threads = 0;
     } else {
         if (threadsstr != NULL) {
-            if (strcmp(threadsstr, "auto") == 0) {
-                aconf->threads = 0;
-            } else {
-                if (ByteExtractStringInt32(&aconf->threads, 10, 0, (const char *)threadsstr) < 0) {
-                    goto finalize;
+            if ((strcmp(threadsstr, "auto") == 0) || \
+                (ByteExtractStringInt32(&aconf->threads, 10, 0,
+                                        (const char *)threadsstr) < 0)) {
+                    aconf->threads = 0;
                 }
-            }
         }
     }
 

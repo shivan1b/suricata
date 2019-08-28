@@ -168,8 +168,9 @@ static void *NapatechConfigParser(const char *device)
         return NULL;
     }
 
-    /* device+5 is a pointer to the beginning of the stream id after the constant nt portion */
+    /* device+2 is a pointer to the beginning of the stream id after the constant nt portion */
     if (ByteExtractStringUint16(&conf->stream_id, 10, 0, (const char *)(device + 2)) < 0) {
+        SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for conf.stream_id");
         SCFree(conf);
         return NULL;
     }

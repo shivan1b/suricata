@@ -149,7 +149,9 @@ static int ParseNetmapSettings(NetmapIfaceSettings *ns, const char *iface,
             ns->threads = 0;
             ns->threads_auto = true;
         } else {
-            if (ByteExtractStringUint16(&ns->threads, 10, 0, (const char *)threadsstr) < 0) {
+            if (ByteExtractStringUint16(&ns->threads, 10, 0, threadsstr) < 0) {
+                SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for netmap "
+                           "threads: %s", threadsstr);
                 goto finalize;
             }
         }

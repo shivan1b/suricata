@@ -198,24 +198,21 @@ static DetectModbus *DetectModbusAccessParse(const char *str)
             if (arg[0] == '>') {
                 if (ByteExtractStringUint16(&modbus->address->min, 10, 0,
                                             (const char*) (arg + 1)) < 0) {
-                    SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for min "
-                               "address: '%d'", arg[1]);
+                    SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for min address");
                     goto error;
                 }
                 modbus->address->mode   = DETECT_MODBUS_GT;
             } else if (arg[0] == '<') {
                 if (ByteExtractStringUint16(&modbus->address->min, 10, 0,
                                             (const char*) (arg + 1)) < 0) {
-                    SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for min "
-                               "address: '%d'", arg[1]);
+                    SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for min address");
                     goto error;
                 }
                 modbus->address->mode   = DETECT_MODBUS_LT;
             } else {
                 if (ByteExtractStringUint16(&modbus->address->min, 10, 0,
                                             (const char*) (arg)) < 0) {
-                    SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for min "
-                               "address: '%d'", arg[0]);
+                    SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for min address");
                     goto error;
                 }
             }

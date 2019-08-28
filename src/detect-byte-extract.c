@@ -241,7 +241,7 @@ static inline DetectByteExtractData *DetectByteExtractParse(const char *arg)
     if (ByteExtractStringUint8(&bed->nbytes, 10, 0,
                                (const char *)nbytes_str) < 0) {
         SCLogError(SC_ERR_INVALID_SIGNATURE, "Invalid value for number of bytes"
-                "to be extracted: \"%s\".", nbytes_str);
+                " to be extracted: \"%s\".", nbytes_str);
         goto error;
     }
     /* offset */
@@ -426,7 +426,7 @@ static inline DetectByteExtractData *DetectByteExtractParse(const char *arg)
             if (ByteExtractStringUint8(&bed->align_value, 10, 0,
                                        (const char *)align_str) < 0) {
                 SCLogError(SC_ERR_INVALID_SIGNATURE, "Invalid value for"
-                        "align_str: \"%s\".", align_str);
+                           " align_str: \"%s\".", align_str);
                 goto error;
             }
             if (!(bed->align_value == 2 || bed->align_value == 4)) {

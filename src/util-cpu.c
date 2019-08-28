@@ -79,15 +79,13 @@ uint16_t UtilCpuGetNumProcessorsConfigured(void)
 	long nprocs = -1;
 	const char* envvar = getenv("NUMBER_OF_PROCESSORS");
     if (envvar != NULL) {
-        if (ByteExtractStringInt64(&nprocs, 10, 0, (const char *)envvar) < 0) {
+        if (ByteExtractStringInt32(&nprocs, 10, 0, envvar) < 0) {
             SCLogError(SC_ERR_INVALID_VALUE, "Invalid value for the number of "
                        "cpus: '%s'", envvar);
             return 0;
         }
     }
-    else {
-        nprocs = 0;
-    }
+    nprocs = 0;
     if (nprocs < 1) {
         SCLogError(SC_ERR_SYSCALL, "Couldn't retrieve the number of cpus "
                    "configured from the NUMBER_OF_PROCESSORS environment variable");
