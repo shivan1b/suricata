@@ -271,9 +271,7 @@ static int AlertFastLogTest01(void)
     p = UTHBuildPacket(buf, buflen, IPPROTO_TCP);
 
     DetectEngineCtx *de_ctx = DetectEngineCtxInit();
-    if (de_ctx == NULL) {
-        return result;
-    }
+    FAIL_IF_NULL(de_ctx);
 
     de_ctx->flags |= DE_QUIET;
 
@@ -291,6 +289,7 @@ static int AlertFastLogTest01(void)
     if (p->alerts.cnt == 1) {
         result = (strcmp(p->alerts.alerts[0].s->class_msg, "Unknown are we") == 0);
     }
+    FAIL_IF_NOT(result);
 
     SigGroupCleanup(de_ctx);
     SigCleanSignatures(de_ctx);
@@ -298,7 +297,7 @@ static int AlertFastLogTest01(void)
     DetectEngineCtxFree(de_ctx);
 
     UTHFreePackets(&p, 1);
-    return result;
+    PASS;
 }
 
 static int AlertFastLogTest02(void)
@@ -316,9 +315,7 @@ static int AlertFastLogTest02(void)
     p = UTHBuildPacket(buf, buflen, IPPROTO_TCP);
 
     DetectEngineCtx *de_ctx = DetectEngineCtxInit();
-    if (de_ctx == NULL) {
-        return result;
-    }
+    FAIL_IF_NULL(de_ctx);
 
     de_ctx->flags |= DE_QUIET;
 
@@ -339,6 +336,7 @@ static int AlertFastLogTest02(void)
         if (result == 0)
             printf("p->alerts.alerts[0].class_msg %s: ", p->alerts.alerts[0].s->class_msg);
     }
+    FAIL_IF_NOT(result);
 
     SigGroupCleanup(de_ctx);
     SigCleanSignatures(de_ctx);
@@ -346,7 +344,7 @@ static int AlertFastLogTest02(void)
     DetectEngineCtxFree(de_ctx);
 
     UTHFreePackets(&p, 1);
-    return result;
+    PASS;
 }
 
 #endif /* UNITTESTS */
