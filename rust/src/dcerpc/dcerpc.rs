@@ -1,18 +1,5 @@
-//use core::{Flow};
-
-//pub enum dcerpc {
-//    DCERPC_FIELD_NONE = 0,
-//    DCERPC_PARSE_DCERPC_HEADER,
-//    DCERPC_PARSE_DCERPC_BIND,
-//    DCERPC_PARSE_DCERPC_BIND_ACK,
-//    DCERPC_PARSE_DCERPC_REQUEST,
-//    /* must be last */
-//    DCERPC_FIELD_MAX,
-//}
-//
-
 #[derive(Debug)]
-struct DCERPCRequest {
+pub struct DCERPCRequest {
     ctxid: u16,
     opnum: u16,
     stub_data_buffer: Vec<u8>,
@@ -22,14 +9,14 @@ struct DCERPCRequest {
 }
 
 #[derive(Debug)]
-struct DCERPCResponse {
+pub struct DCERPCResponse {
     stub_data_buffer: Vec<u8>,
     stub_data_buffer_len: u32,
     stub_data_buffer_reset: bool,
 }
 
 #[derive(Debug)]
-struct DCERPCUuidEntry {
+pub struct DCERPCUuidEntry {
     ctxid: u16,
     internal_id: u16,
     result: u16,
@@ -42,7 +29,7 @@ struct DCERPCUuidEntry {
 
 
 #[derive(Debug)]
-struct DCERPCHdrUdp {
+pub struct DCERPCHdrUdp {
     rpc_vers: u8,
     pkt_type: u8,
     flags1: u8,
@@ -65,7 +52,7 @@ struct DCERPCHdrUdp {
 }
 
 #[derive(Debug)]
-struct DCERPCBindBindAck {
+pub struct DCERPCBindBindAck {
     numctxitems: u8,
     numctxitemsleft: u8,
     ctxbytesprocessed: u8,
@@ -83,7 +70,7 @@ struct DCERPCBindBindAck {
 }
 
 #[derive(Debug)]
-struct DCERPCUDP {
+pub struct DCERPCUDP {
     dcerpchdrudp: DCERPCHdrUdp,
     dcerpcbindbindack: DCERPCBindBindAck,
     dcerpcrequest: DCERPCRequest,
@@ -96,11 +83,13 @@ struct DCERPCUDP {
 }
 
 #[derive(Debug)]
-struct DCERPCUDPState {
+pub struct DCERPCUDPState {
     dcerpcudp: DCERPCUDP,
     bytesprocessed: u16,
     fraglenleft: u16,
     frag_data: Vec<u8>,
     uuid_entry: Vec<DCERPCUuidEntry>,
     uuid_list: Vec<uuid_entry>,
+    de_state: Option<*mut core::DetectEngineState>,
 }
+
