@@ -2,9 +2,53 @@ use nom::{IResult, be_u8, be_u16, be_u32};
 use nom;
 use crate::dcerpc::dcerpc::*;
 
-named!(pub dcerpc_parse_header<DCERPCHeader>,
+
+// parser which takes in a uuid vector
+// breaks it into 4 parts
+// like time: take!(4)
+// possible?
+named!(pub dcerpc_parse_header<DCERPCHdrUdp>,
        do_parse!(
-            // TODO
+            pkt_type: be_u8 >>
+            flags1: be_u8 >>
+            flags2: be_u8 >>
+            drep: take!(3) >>
+            serial_hi: be_u8 >>
+            // TODO objectuuid write subparser
+            // TODO interfaceuuid write subparser
+            // TODO activityuuid write subparser
+            // TODO server_boot
+            // TODO if_vers
+            // TODO seqnum
+            // TODO opnum
+            // TODO ihint
+            // TODO ahint
+            // TODO fraglen
+            // TODO fragnum
+            auth_proto: be_u8 >>
+            serial_lo: be_u8 >>
+            (
+                DCERPCHeader {
+                    pkt_type: pkt_type,
+                    flags1: flags1,
+                    flags2: flags2,
+                    drep: drep,
+                    serial_hi: serial_hi,
+                    objectuuid: objectuuid,
+                    interfaceuuid: interfaceuuid,
+                    activityuuid: activityuuid,
+                    server_boot: server_boot,
+                    if_vers: if_vers,
+                    seqnum: seqnum,
+                    opnum: opnum,
+                    ihint: ihint,
+                    ahint: ahint,
+                    fraglen: fraglen,
+                    fragnum: fragnum,
+                    auth_proto: auth_proto,
+                    serial_lo: serial_lo,
+                }
+                )
            )
     );
 
