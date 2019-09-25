@@ -119,6 +119,37 @@ impl DCERPCUDPState {
         }
     }
 
+    pub fn parse_fragment_data(&mut self,
+                               state: DCERPCUDPState,
+                               input: &[u8],
+                               input_len: u32)
+                              -> u8 {
+        let mut stub_data_buffer: Vec<u8> = Vec::new();
+        let mut stub_data_buffer_len: u32;
+        let mut stub_len: u16 = 0;
+        if (state.dcerpcudp.dcerpchdrudp.pkt_type == 0) { // TODO get all consts including REQUEST that is to be used here
+            stub_data_buffer = state.dcerpcudp.dcerpcrequest.stub_data_buffer;
+            stub_data_buffer_len = state.dcerpcudp.dcerpcrequest.stub_data_buffer_len;
+        }
+        else {
+            stub_data_buffer = state.dcerpcudp.dcerpcresponse.stub_data_buffer;
+            stub_data_buffer_len = state.dcerpcudp.dcerpcresponse.stub_data_buffer_len;
+        }
+        stub_len = cmp::min(state.dcerpcudp.fraglenleft, input_len);
+        if (stub_len == 0) {
+            return 0;
+        }
+        if (state.dcerpcudp.flags1 & PFC_FIRST_FLAG) {
+            stub_data_buffer_len = 0;
+        }
+        // TODO memory copying part
+        stub_data_buffer_len += stub_len;
+        state.dcerpc.fraglenleft -= stub_len;
+        state.dcerpc.bytesprocessed += stub_len;
+
+        stub len
+    }
+
     pub fn parse_dcerpc_udp_header(&mut self, input: &[u8]) -> bool {
         let mut dcerpcudp: DCERPCUDP;
         match parser::dcerpc_parse_header(input) {
@@ -130,10 +161,12 @@ impl DCERPCUDPState {
                 self.dcerpcudp.dcerpchdrudp = header;
                 self.uuid_entry = header.activityuuid;
                 self.bytesprocessed = header.len() - input.len(); // FIXME
+                true
             },
             Err(_) => {
                 self.bytesprocessed = 0;
                 // TODO conditionals
+                false
             },
         }
     }
@@ -166,21 +199,25 @@ pub extern "C" fn rs_dcerpc_udp_state_transaction_free(state: *mut std::os::raw:
 #[no_mangle]
 pub extern "C" fn rs_dcerpc_udp_get_tx_detect_state(vtx: *mut std::os::raw::c_void)
                                                     -> *mut core::DetectEngineState {
-    // TODO
+    let dce_state = cast_pointer!(vtx, DCERPCUDPState);
+    dce_state.de_state
 }
 
 #[no_mangle]
 pub extern "C" fn rs_dcerpc_udp_set_tx_detect_state(vtx: *mut std::os::raw::c_void,
                                                     de_state: *mut core::DetectEngineState)
                                                     -> u8 {
-    // TODO
+    let mut dce_state = cast_pointer!(vtx, DCERPCUDPState);
+    dce_state.de_state = Some(de_state);
+    0
 }
 
 #[no_mangle]
 pub extern "C" fn rs_dcerpc_udp_get_tx(state: *mut std::os::raw::c_void,
                                        tx_id: u64)
                                       -> *mut DCERPCUDPState {
-    // TODO
+    let dce_state = cast_pointer!(state, DCERPCUDPState);
+    dce_state
 }
 
 #[no_mangle]
