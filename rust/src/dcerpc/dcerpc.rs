@@ -1,3 +1,7 @@
+use crate::dcerpc::parser;
+
+DCERPC_UDP_HDR_LEN = 80;
+
 #[derive(Debug)]
 pub struct DCERPCRequest {
     ctxid: u16,
@@ -27,6 +31,15 @@ pub struct DCERPCUuidEntry {
     // tailq thingy
 }
 
+#[derive(Debug)]
+pub struct Uuid {
+    time_low: Vec<u8>,
+    time_mid: Vec<u8>,
+    time_hi_and_version: Vec<u8>,
+    clock_seq_hi_and_reserved: u8,
+    clock_seq_low: u8,
+    node: Vec<u8>,
+}
 
 #[derive(Debug)]
 pub struct DCERPCHdrUdp {
@@ -78,13 +91,13 @@ pub struct DCERPCUDP {
     bytesprocessed: u16,
     fraglenleft: u16,
     frag_data: Vec<u8>,
-    uuid_entry: Vec<DCERPCUuidEntry>,
+    uuid_entry: DCERPCUuidEntry,
     uuid_list: Vec<uuid_entry>,
 }
 
 #[derive(Debug)]
 pub struct DCERPCUDPState {
-    dcerpcudp: DCERPCUDP,
+    dcerpcudp: Option<DCERPCUDP>,
     bytesprocessed: u16,
     fraglenleft: u16,
     frag_data: Vec<u8>,
@@ -93,3 +106,98 @@ pub struct DCERPCUDPState {
     de_state: Option<*mut core::DetectEngineState>,
 }
 
+impl DCERPCUDPState {
+    pub fn new() -> DCERPCUDPState {
+        return DCERPCUDPState {
+            dcerpcudp: None,
+            bytesprocessed: 0,
+            fraglenleft: 0,
+            frag_data: Vec::new(),
+            uuid_entry: Vec::new(),
+            uuild_list: Vec::new(),
+            de_state: None,
+        }
+    }
+
+    pub fn parse_dcerpc_udp_header(&mut self, input: &[u8]) -> bool {
+        let mut dcerpcudp: DCERPCUDP;
+        match parser::dcerpc_parse_header(input) {
+            Ok((leftover_bytes, header)) => {
+                if (header.pkt_type != 4) {
+                    SCLogDebug!("DCERPC UDP Header did not validate.");
+                    false
+                }
+                self.dcerpcudp.dcerpchdrudp = header;
+                self.uuid_entry = header.activityuuid;
+                self.bytesprocessed = header.len() - input.len(); // FIXME
+            },
+            Err(_) => {
+                self.bytesprocessed = 0;
+                // TODO conditionals
+            },
+        }
+    }
+
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_parse(_flow: *mut core::Flow,
+                                      state: &mut DCERPCUDPState,
+                                      _pstate: *mut std::os::raw::c_void,
+                                      input: *const u8,
+                                      input_len: u32,
+                                      _data: *mut std::os::raw::c_void,
+                                      flags: const u8)
+                                      -> i8 {
+    // TODO
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_state_free(state: *mut std::os::raw::c_void) {
+    // TODO
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_state_transaction_free(state: *mut std::os::raw::c_void,
+                                                       tx_id: u64) {
+    // do nothing
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_get_tx_detect_state(vtx: *mut std::os::raw::c_void)
+                                                    -> *mut core::DetectEngineState {
+    // TODO
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_set_tx_detect_state(vtx: *mut std::os::raw::c_void,
+                                                    de_state: *mut core::DetectEngineState)
+                                                    -> u8 {
+    // TODO
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_get_tx(state: *mut std::os::raw::c_void,
+                                       tx_id: u64)
+                                      -> *mut DCERPCUDPState {
+    // TODO
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_get_tx_cnt(state: *mut std::os::raw::c_void)
+                                          -> u8 {
+    1
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_get_alstate_progress(tx: *mut std::os::raw::c_void,
+                                                     direction: u8)
+                                                    -> u8 {
+    0
+}
+
+#[no_mangle]
+pub extern "C" fn rs_dcerpc_udp_get_alstate_progress_completion_status(direction: u8)
+                                                                      -> u8 {
+    1
+}

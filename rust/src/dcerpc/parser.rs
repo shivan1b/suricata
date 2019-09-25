@@ -3,54 +3,224 @@ use nom;
 use crate::dcerpc::dcerpc::*;
 
 
-// parser which takes in a uuid vector
-// breaks it into 4 parts
-// like time: take!(4)
-// possible?
+named!(pub parse_uuid<Uuid>,
+    do_parse!(
+        time_low: take!(4) >>
+        time_mid: take!(2) >>
+        time_hi_and_version: take!(2) >>
+        clock_seq_hi_and_reserved: be_u8 >>
+        clock_seq_low: be_u8 >>
+        node: take!(6) >>
+        (
+            Uuid {
+                time_low: time_low.to_vec(),
+                time_mid: time_mid.to_vec(),
+                time_hi_and_version: time_hi_and_version.to_vec(),
+                clock_seq_hi_and_reserved: clock_seq_hi_and_reserved,
+                clock_seq_low: clock_seq_low,
+                node: node.to_vec(),
+            }
+            )
+        )
+    );
+
+fn assemble_uuid(uuid: Uuid) -> Vec<u8>
+{
+    let mut uuidtmp = uuid;
+    let mut vect: Vec<u8> = Vec::new();
+    uuidtmp.time_low.reverse();
+    uuidtmp.time_mid.reverse();
+    uuidtmp.time_hi_and_version.reverse();
+    vect.append(&mut uuidtmp.time_low);
+    vect.append(&mut uuidtmp.time_mid);
+    vect.append(&mut uuidtmp.time_hi_and_version);
+    vect.push(uuidtmp.clock_seq_hi_and_reserved);
+    vect.push(uuidtmp.clock_seq_low);
+    vect.append(&mut uuidtmp.node);
+
+    vect
+}
+
 named!(pub dcerpc_parse_header<DCERPCHdrUdp>,
        do_parse!(
-            pkt_type: be_u8 >>
-            flags1: be_u8 >>
-            flags2: be_u8 >>
-            drep: take!(3) >>
-            serial_hi: be_u8 >>
-            // TODO objectuuid write subparser
-            // TODO interfaceuuid write subparser
-            // TODO activityuuid write subparser
-            // TODO server_boot
-            // TODO if_vers
-            // TODO seqnum
-            // TODO opnum
-            // TODO ihint
-            // TODO ahint
-            // TODO fraglen
-            // TODO fragnum
-            auth_proto: be_u8 >>
-            serial_lo: be_u8 >>
-            (
-                DCERPCHeader {
-                    pkt_type: pkt_type,
-                    flags1: flags1,
-                    flags2: flags2,
-                    drep: drep,
-                    serial_hi: serial_hi,
-                    objectuuid: objectuuid,
-                    interfaceuuid: interfaceuuid,
-                    activityuuid: activityuuid,
-                    server_boot: server_boot,
-                    if_vers: if_vers,
-                    seqnum: seqnum,
-                    opnum: opnum,
-                    ihint: ihint,
-                    ahint: ahint,
-                    fraglen: fraglen,
-                    fragnum: fragnum,
-                    auth_proto: auth_proto,
-                    serial_lo: serial_lo,
-                }
-                )
+           rpc_vers: be_u8 >>
+           pkt_type: be_u8 >>
+           flags1: be_u8 >>
+           flags2: be_u8 >>
+           drep: take!(3) >>
+           serial_hi: be_u8 >>
+           objectuuid: take!(16) >>
+           interfaceuuid: take!(16) >>
+           activityuuid: take!(16) >>
+           server_boot_vec: take!(4) >>
+           if_vers_vec: take!(4) >>
+           seqnum_vec: take!(4) >>
+           opnum_vec: take!(2) >>
+           ihint_vec: take!(2) >>
+           ahint_vec: take!(2) >>
+           fraglen_vec: take!(2) >>
+           fragnum_vec: take!(2) >>
+           auth_proto: be_u8 >>
+           serial_lo: be_u8 >>
+           (
+               DCERPCHdrUdp {
+                   rpc_vers: rpc_vers,
+                   pkt_type: pkt_type,
+                   flags1: flags1,
+                   flags2: flags2,
+                   drep: drep.to_vec(),
+                   serial_hi: serial_hi,
+                   objectuuid: match parse_uuid(objectuuid) {
+                       Ok((_, vect)) => assemble_uuid(vect),
+                       Err(e) => {
+                           println!("{}", e);
+                           vec![0]
+                       },
+                   },
+                   interfaceuuid: match parse_uuid(interfaceuuid) {
+                       Ok((_, vect)) => assemble_uuid(vect),
+                       Err(e) => {
+                           println!("{}", e);
+                           vec![0]
+                       },
+                   },
+                   activityuuid: match parse_uuid(activityuuid){
+                       Ok((_, vect)) => assemble_uuid(vect),
+                       Err(e) => {
+                           println!("{}", e);
+                           vec![0]
+                       },
+                   },
+                   server_boot: match drep[0] {
+                       0x10 => {
+                           let server_boot_vec = server_boot_vec.to_vec();
+                           let mut server_boot: u32 = server_boot_vec[0] as u32;
+                           server_boot |= (server_boot_vec[1] as u32) << 8;
+                           server_boot |= (server_boot_vec[2] as u32) << 16;
+                           server_boot |= (server_boot_vec[3] as u32) << 24;
+                           server_boot
+                       },
+                       _ => {
+                           let server_boot_vec = server_boot_vec.to_vec();
+                           let mut server_boot: u32 = (server_boot_vec[0] as u32) << 24;
+                           server_boot |= (server_boot_vec[1] as u32) << 16;
+                           server_boot |= (server_boot_vec[2] as u32) << 8;
+                           server_boot |= server_boot_vec[3] as u32;
+                           server_boot
+                       }
+                   },
+                   if_vers: match drep[0] {
+                       0x10 => {
+                           let if_vers_vec = if_vers_vec.to_vec();
+                           let mut if_vers: u32 = if_vers_vec[0] as u32;
+                           if_vers |= (if_vers_vec[1] as u32) << 8;
+                           if_vers |= (if_vers_vec[2] as u32) << 16;
+                           if_vers |= (if_vers_vec[3] as u32) << 24;
+                           if_vers
+                       },
+                       _ => {
+                           let if_vers_vec = if_vers_vec.to_vec();
+                           let mut if_vers = (if_vers_vec[0] as u32) << 24;
+                           if_vers |= (if_vers_vec[1] as u32) << 16;
+                           if_vers |= (if_vers_vec[2] as u32) << 8;
+                           if_vers |= if_vers_vec[3] as u32;
+                           if_vers
+                       }
+                   },
+                   seqnum: match drep[0] {
+                       0x10 => {
+                           let seqnum_vec = seqnum_vec.to_vec();
+                           let mut seqnum: u32 = seqnum_vec[0] as u32;
+                           seqnum |= (seqnum_vec[1] as u32) << 8;
+                           seqnum |= (seqnum_vec[2] as u32) << 16;
+                           seqnum |= (seqnum_vec[3] as u32) << 24;
+                           seqnum
+                       },
+                       _ => {
+                           let seqnum_vec = seqnum_vec.to_vec();
+                           let mut seqnum: u32 = (seqnum_vec[0] as u32) << 24;
+                           seqnum |= (seqnum_vec[1] as u32) << 16;
+                           seqnum |= (seqnum_vec[2] as u32) << 8;
+                           seqnum |= seqnum_vec[3] as u32;
+                           seqnum
+                       }
+                   },
+                   opnum: match drep[0] {
+                       0x10 => {
+                           let opnum_vec = opnum_vec.to_vec();
+                           let mut opnum: u16 = opnum_vec[0] as u16;
+                           opnum |= (opnum_vec[1] as u16) << 8;
+                           opnum
+                       },
+                       _ => {
+                           let opnum_vec = opnum_vec.to_vec();
+                           let mut opnum: u16 = (opnum_vec[0] as u16) << 8;
+                           opnum |= opnum_vec[1] as u16;
+                           opnum
+                       }
+                   },
+                   ihint: match drep[0] {
+                       0x10 => {
+                           let ihint_vec = ihint_vec.to_vec();
+                           let mut ihint: u16 = ihint_vec[0] as u16;
+                           ihint |= (ihint_vec[1] as u16) << 8;
+                           ihint
+                       },
+                       _ => {
+                           let ihint_vec = ihint_vec.to_vec();
+                           let mut ihint: u16 = (ihint_vec[0] as u16) << 8;
+                           ihint |= ihint_vec[1] as u16;
+                           ihint
+                       }
+                   },
+                   ahint: match drep[0] {
+                        0x10 => {
+                           let ahint_vec = ahint_vec.to_vec();
+                           let mut ahint: u16 = ahint_vec[0] as u16;
+                           ahint |= (ahint_vec[1] as u16) << 8;
+                           ahint
+                       },
+                       _ => {
+                           let ahint_vec = ahint_vec.to_vec();
+                           let mut ahint: u16 = (ahint_vec[0] as u16) << 8;
+                           ahint |= ahint_vec[1] as u16;
+                           ahint
+                       }
+                   },
+                   fraglen: match drep[0] {
+                         0x10 => {
+                           let fraglen_vec = fraglen_vec.to_vec();
+                           let mut fraglen: u16 = fraglen_vec[0] as u16;
+                           fraglen |= (fraglen_vec[1] as u16) << 8;
+                           fraglen
+                       },
+                       _ => {
+                           let fraglen_vec = fraglen_vec.to_vec();
+                           let mut fraglen: u16 = (fraglen_vec[0] as u16) << 8;
+                           fraglen |= fraglen_vec[1] as u16;
+                           fraglen
+                       }
+                   },
+                   fragnum: match drep[0] {
+                        0x10 => {
+                           let fragnum_vec = fragnum_vec.to_vec();
+                           let mut fragnum: u16 = fragnum_vec[0] as u16;
+                           fragnum |= (fragnum_vec[1] as u16) << 8;
+                           fragnum
+                       },
+                       _ => {
+                           let fragnum_vec = fragnum_vec.to_vec();
+                           let mut fragnum: u16 = (fragnum_vec[0] as u16) << 8;
+                           fragnum |= fragnum_vec[1] as u16;
+                           fragnum
+                       }
+                   },
+                   auth_proto: auth_proto,
+                   serial_lo: serial_lo,
+               }
+               )
            )
-    );
+   );
 
 #[cfg(test)]
 mod tests {

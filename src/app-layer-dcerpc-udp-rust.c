@@ -788,11 +788,6 @@ static int DCERPCUDPParse(Flow *f, void *dcerpc_state,
     SCReturnInt(1);
 }
 
-static void *RustDCERPCUDPStateAlloc(void)
-{
-    //TODO
-}
-
 static void *DCERPCUDPStateAlloc(void)
 {
     void *s = SCMalloc(sizeof(DCERPCUDPState));
@@ -805,7 +800,7 @@ static void *DCERPCUDPStateAlloc(void)
 
 static void RustDCERPCUDPStateFree(void *s)
 {
-    //TODO
+    return rs_dcerpc_udp_state_free(s);
 }
 
 static void DCERPCUDPStateFree(void *s)
@@ -839,7 +834,7 @@ static void DCERPCUDPStateFree(void *s)
 
 static int RustDCERPCUDPSetTxDetectState(void *vtx, DetectEngineState *de_state)
 {
-    //TODO
+    return rs_dcerpc_udp_set_tx_detect_state(vtx, de_state);
 }
 
 static int DCERPCUDPSetTxDetectState(void *vtx, DetectEngineState *de_state)
@@ -851,7 +846,7 @@ static int DCERPCUDPSetTxDetectState(void *vtx, DetectEngineState *de_state)
 
 static DetectEngineState *RustDCERPCUDPGetTxDetectState(void *vtx)
 {
-    //TODO
+    return rs_dcerpc_udp_get_tx_detect_state(vtx);
 }
 
 static DetectEngineState *DCERPCUDPGetTxDetectState(void *vtx)
@@ -862,7 +857,7 @@ static DetectEngineState *DCERPCUDPGetTxDetectState(void *vtx)
 
 static void RustDCERPCUDPStateTransactionFree(void *state, uint64_t tx_id)
 {
-    //TODO
+    return rs_dcerpc_udp_state_transaction_free(state, tx_id);
 }
 
 static void DCERPCUDPStateTransactionFree(void *state, uint64_t tx_id)
@@ -872,7 +867,7 @@ static void DCERPCUDPStateTransactionFree(void *state, uint64_t tx_id)
 
 static void *RustDCERPCUDPGetTx(void *state, uint64_t tx_id)
 {
-    //TODO
+    return rs_dcerpc_udp_get_tx(state, tx_id);
 }
 
 static void *DCERPCUDPGetTx(void *state, uint64_t tx_id)
@@ -883,7 +878,7 @@ static void *DCERPCUDPGetTx(void *state, uint64_t tx_id)
 
 static uint64_t RustDCERPCUDPGetTxCnt(void *state)
 {
-    //TODO
+    return rs_dcerpc_udp_get_tx_cnt(state);
 }
 
 static uint64_t DCERPCUDPGetTxCnt(void *state)
@@ -894,7 +889,7 @@ static uint64_t DCERPCUDPGetTxCnt(void *state)
 
 static int RustDCERPCUDPGetAlstateProgressCompletionStatus(uint8_t direction)
 {
-    //TODO
+    return rs_dcerpc_udp_get_alstate_progress_completion_status(direction);
 }
 
 static int DCERPCUDPGetAlstateProgressCompletionStatus(uint8_t direction)
@@ -904,7 +899,7 @@ static int DCERPCUDPGetAlstateProgressCompletionStatus(uint8_t direction)
 
 static int RustDCERPCUDPGetAlstateProgress(void *tx, uint8_t direction)
 {
-    //TODO
+    return rs_dcerpc_udp_get_alstate_progress(tx, direction);
 }
 
 static int DCERPCUDPGetAlstateProgress(void *tx, uint8_t direction)
