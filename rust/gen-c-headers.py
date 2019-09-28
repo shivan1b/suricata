@@ -79,6 +79,7 @@ type_map = {
     "Flow": "Flow",
     "DNSState": "RSDNSState",
     "DNSTransaction": "RSDNSTransaction",
+    "DCERPCUDPState": "RDCERPCUDPState",
     "NFSState": "NFSState",
     "NFSTransaction": "NFSTransaction",
     "NTPState": "NTPState",
@@ -136,6 +137,9 @@ def convert_type(rs_type):
                     "*mut *const",
                     "*mut*const"]:
                 return "const %s **" % (type_map[rtype])
+            elif mod in ["const",]:
+                print(">>>>>>>> const {}".format(type_map[rtype]))
+                return "const %s" % (type_map[rtype])
             else:
                 raise Exception("Unknown modifier '%s' in '%s'." % (
                     mod, rs_type))
